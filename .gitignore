@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+*.log
+*.retry
+venv/
+.venv/
+**/admin.conf
+**/kubeconfig
+**/hosts.yaml
+*.pem
+*.key
+id_rsa*
