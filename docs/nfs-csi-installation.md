@@ -56,7 +56,7 @@ Verify the file exists on the NFS server under the exported path.
 
 ## Installation status
 
-The repository contains a documented **installation procedure and manifests**, but the evidence reviewed here does not include final live `helm status`, CSI controller/node readiness, a bound PVC and a successful read/write test. Therefore the installation is **documented; runtime validation remains pending**. Update this section with the exact command outputs after verification.
+**Observed 2026-10-28:** Helm release `csi-driver-nfs` is `deployed` (revision 2); controller Pod `5/5 Running`; node Pod `3/3 Running`; `CSIDriver nfs.csi.k8s.io` registered; `StorageClass eways-nfs` exists (`Retain`, `Immediate`); PVC `default/nfs-test-pvc` is `Bound` with `5Gi`, `RWX`, volume `pvc-f6eaf4ac-a436-40bc-aa24-2dbba6a85097`. **Driver installation and dynamic provisioning are verified. End-to-end pod mount and read/write remain unverified** pending `kubectl exec` test.
 
 ## Operational considerations
 
