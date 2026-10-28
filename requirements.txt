@@ -1,0 +1,3 @@
+# Install the versions compatible with the checked-out upstream Kubespray.
+# Prefer upstream Kubespray requirements rather than pinning a guessed version here.
+-r /home/abdollahian/kubespray/requirements.txt
