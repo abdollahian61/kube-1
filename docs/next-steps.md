@@ -1,14 +1,15 @@
-# Next steps: Helm, Cilium, Hubble
+# Eways Kubernetes platform: outstanding actions
 
-**Not installed as of the latest observed cluster output.**
+As of 2026-10-28 Cilium/Hubble and NFS CSI are running; these are **no longer installation TODOs**.
 
-1. Run `scripts/check-cluster.sh` and inspect node taints and API readiness.
-2. Install a pinned, verified Helm binary (via approved internal artifact source).
-3. Select and pin a Cilium chart version supporting Kubernetes v1.36.4 and the host kernel.
-4. Obtain the chart and list **all images from the actual rendered Helm templates**, including Cilium agent, operator, Envoy, Hubble relay and UI.
-5. Mirror images to JFrog, verify provenance and digests, and configure the chart to reference internal image paths.
-6. Start from `cilium/values.yaml.example`, adjust values for the selected chart and confirm API access at `192.168.1.203:6443`.
-7. Install Cilium using Helm only after the above validation. Do not install a second CNI or enable kube-proxy.
-8. Verify node Ready, CoreDNS Running, Cilium health and pod-to-pod/service connectivity.
+1. Validate `kubectl get nodes` Ready and Cilium agent health, pod DNS and networking; save sanitized proof.
+2. Confirm actual chart/override parity: `helm get values cilium -n kube-system -a`.
+3. Run NFS read/write test from a pod using the bound `eways-nfs` PVC.
+4. Mirror Traefik `v3.7.16` to JFrog; inspect final Helm render (NodePorts 30080/30443); install and test.
+5. Create/verify a local JFrog Helm repository and publish chart archives with SHA256 (previously `helm-eways-local` was not found).
+6. Verify metrics server, TLS/cert-manager, resource limits, network policy, ingress access, and monitoring before application rollout.
+7. Store sanitized inventories/configuration in Git; keep secrets separate.
+8. Make etcd and NFS backup/restore reproducible, then test disaster recovery.
+9. For production, plan multiple control-plane/worker nodes and independent, resilient storage.
 
-This document intentionally does not provide a blind `helm install` command for an unverified chart/image set.
+Do not mark Traefik or workload data path as complete without runtime evidence.
