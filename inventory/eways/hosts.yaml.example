@@ -1,0 +1,26 @@
+---
+# TEMPLATE ONLY. Copy to hosts.yaml and adjust the SSH key/user as needed.
+all:
+  hosts:
+    tst-jfrog:
+      ansible_host: 192.168.1.203
+      ip: 192.168.1.203
+      access_ip: 192.168.1.203
+      ansible_user: abdollahian
+      ansible_ssh_private_key_file: /root/.ssh/abdollahian
+  children:
+    kube_control_plane:
+      hosts:
+        tst-jfrog:
+    kube_node:
+      hosts:
+        tst-jfrog:
+    etcd:
+      hosts:
+        tst-jfrog:
+    k8s_cluster:
+      children:
+        kube_control_plane:
+        kube_node:
+    calico_rr:
+      hosts: {}
