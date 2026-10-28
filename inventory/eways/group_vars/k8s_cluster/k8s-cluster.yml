@@ -1,0 +1,14 @@
+---
+# Confirmed settings from the Eways Kubespray bootstrap
+kube_version: 1.36.4
+cluster_name: cluster.local
+kube_network_plugin: none
+kube_service_addresses: 10.233.0.0/18
+kube_pods_subnet: 10.233.64.0/18
+kube_network_node_prefix: 24
+container_manager: containerd
+kube_proxy_remove: true
+enable_nodelocaldns: false
+enable_dns_autoscaler: false
+kubeconfig_localhost: true
+kubectl_localhost: true
