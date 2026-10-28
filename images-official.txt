@@ -1,0 +1,7 @@
+# Original image | Destination in JFrog | Approved digest (optional)
+registry.k8s.io/kube-apiserver:v1.36.4|kube-apiserver:v1.36.4|
+registry.k8s.io/kube-controller-manager:v1.36.4|kube-controller-manager:v1.36.4|
+registry.k8s.io/kube-scheduler:v1.36.4|kube-scheduler:v1.36.4|
+registry.k8s.io/kube-proxy:v1.36.4|kube-proxy:v1.36.4|
+registry.k8s.io/coredns/coredns:v1.14.2|coredns/coredns:v1.14.2|
+registry.k8s.io/pause:3.10.2|pause:3.10.2|
