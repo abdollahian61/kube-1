@@ -1,0 +1,11 @@
+# source|destination|independently_verified_manifest_digest
+# IMPORTANT: Unofficial mirrors must be validated against the official image digest.
+# If REQUIRE_DIGEST=true, empty digests are refused.
+docker.io/dyrnq/kube-apiserver:v1.36.4|kube-apiserver:v1.36.4|
+docker.io/dyrnq/kube-controller-manager:v1.36.4|kube-controller-manager:v1.36.4|
+docker.io/dyrnq/kube-scheduler:v1.36.4|kube-scheduler:v1.36.4|
+registry.k8s.io/coredns/coredns:v1.14.2|coredns/coredns:v1.14.2|
+registry.k8s.io/pause:3.10.2|pause:3.10.2|
+# Kubespray may still download kube-proxy even if kube-proxy is removed:
+# docker.io/dyrnq/kube-proxy:v1.36.4|kube-proxy:v1.36.4|
+# etcd binary is normally downloaded separately; don't assume etcd image required.
