@@ -1,51 +1,48 @@
-# Eways Kubernetes: installation progress
+# Eways Kubernetes installation progress (2026-10-28)
 
-## Provisioned
+## Proven configuration
+- Single-node `tst-jfrog`, `192.168.1.203`, Ubuntu 26.04.1 LTS
+- Kubernetes `1.36.4` via Kubespray; containerd `2.3.5`
+- Intentionally installed without another CNI or kube-proxy
+- Cilium `1.20.4` via Helm with kube-proxy replacement
+- Pod CIDR `10.233.64.0/18`; Service CIDR `10.233.0.0/18`
+- JFrog Docker registry `repository.eways.co/docker-k8s`
 
-- Single node `tst-jfrog` at `192.168.1.203`, Ubuntu 26.04.1 LTS, Linux kernel `7.0.0-38-generic`.
-- Standalone containerd `2.3.5` with nerdctl and Kubernetes binaries.
-- Kubespray uses custom settings in this repo with upstream `cluster.yml`.
-- Desired topology: **no CNI during Kubespray bootstrap**, **no kube-proxy**, Cilium to be installed later with Helm.
+## Observed Running
+- `cilium`, `cilium-envoy`, `cilium-operator`
+- `hubble-relay` and two-container `hubble-ui`; UI NodePort `31235`
+- 2/2 CoreDNS pods
+- API server, controller manager and scheduler
+- `csi-nfs-controller` 5/5; `csi-nfs-node` 3/3
 
-## Resolved installation problems
+## Verified NFS CSI state
+- Helm `csi-driver-nfs` deployed revision 2, 2026-10-28
+- `CSIDriver nfs.csi.k8s.io` registered
+- `eways-nfs` StorageClass, Retain/Immediate
+- `default/nfs-test-pvc`: Bound, 5Gi, RWX
+- Remaining: test write/read from a mounted Pod
 
-1. `kube_version: 1.36.5` had no matching checksum in the checked-out Kubespray set; changed to `1.36.4`.
-2. Direct image pulls from `registry.k8s.io` through the configured proxy hit HTTP `403` for `kube-apiserver`. Required images were mirrored into JFrog.
-3. Kubespray attempted to download `kube-proxy:v1.36.4` even with `kube_proxy_remove: true`; the image was mirrored to allow the download task. This does not mean kube-proxy should run.
-4. The sysctl reload initially failed because `/proc/sys/net/netfilter/nf_conntrack_max` was absent. Loading `nf_conntrack` fixed it; `sysctl net.netfilter.nf_conntrack_max` then returned `262144`. Persist modules using the file below.
+## Traefik status
+- Chart `42.1.3` downloaded on `tst-jfrog`; image `docker.io/traefik:v3.7.16`
+- `traefik-values.yaml` corrected from unsupported `logs` to `log` and `accessLog`
+- `helm lint` succeeded: `1 chart(s) linted, 0 chart(s) failed`
+- Image push to JFrog, final `helm template` result and installed release **not evidenced yet**.
 
-```bash
-sudo tee /etc/modules-load.d/eways-kubernetes.conf >/dev/null <<'EOF'
-nf_conntrack
-br_netfilter
-overlay
-EOF
-sudo modprobe nf_conntrack br_netfilter overlay
-sudo sysctl --system
-```
+## Historical bootstrap troubleshooting
+1. Kubespray pin `1.36.5` lacked checksum; fixed to `1.36.4`.
+2. `registry.k8s.io` gave HTTP 403; mirrored Kubernetes images to JFrog.
+3. Kubespray downloaded kube-proxy image even though kube-proxy was disabled; no kube-proxy DaemonSet should run.
+4. `nf_conntrack_max` sysctl initially missing; `modprobe nf_conntrack` corrected this.
 
-## Observed state on 2026-10-28
+## Validation still required
 
 ```bash
 kubectl get nodes -o wide
+kubectl get --raw=/readyz
 kubectl get pods -A -o wide
+helm list -A
 kubectl get ds -n kube-system
+kubectl get pvc -A
 ```
 
-Observed: the API server, controller manager, and scheduler are Running; node is `NotReady`; both CoreDNS replicas are `Pending`; no DaemonSets exist in kube-system. A CoreDNS scheduling event says `node(s) had untolerated taint(s)`. **Do not remove taints blindly.** Check current taints, node conditions, and Pending events after Cilium is installed.
-
-## Next steps (NOT completed)
-
-1. Confirm Helm availability and Kubernetes API readiness:
-   ```bash
-   helm version
-   kubectl get --raw=/readyz
-   kubectl describe node tst-jfrog | grep -A5 Taints
-   kubectl get endpoints kubernetes -o wide
-   ```
-2. Select a supported Cilium chart version and verify it against Kubernetes `1.36` and kernel `7.0`.
-3. Mirror/chart-verify required Cilium, operator, Hubble and Envoy images into JFrog.
-4. Install Cilium via Helm with kube-proxy replacement. For kube-proxy-free bootstrap, explicitly provide `k8sServiceHost=192.168.1.203`, `k8sServicePort=6443` and verify actual API reachability. Decide on Hubble Relay/UI values from the selected chart; do not assume version-specific settings.
-5. Validate `kubectl get nodes`, `kubectl get pods -A`, CoreDNS DNS resolution, Cilium health and absence of kube-proxy.
-
-No production readiness or successful Cilium installation is asserted here.
+Single-node architecture and same-node NFS server remain single points of failure, unsuitable for an HA production designation.
