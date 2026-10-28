@@ -1,0 +1,14 @@
+---
+# JFrog mirrors. Verify these paths exist in your Artifactory instance.
+jfrog_base_url: "https://repository.eways.co"
+github_repo: "{{ jfrog_base_url }}/artifactory/generic-github-remote"
+k8s_repo: "{{ jfrog_base_url }}/artifactory/generic-k8s-remote"
+kube_image_repo: "repository.eways.co/docker-k8s"
+
+kubeadm_download_url: "{{ k8s_repo }}/release/v{{ kube_version }}/bin/linux/{{ image_arch }}/kubeadm"
+kubectl_download_url: "{{ k8s_repo }}/release/v{{ kube_version }}/bin/linux/{{ image_arch }}/kubectl"
+kubelet_download_url: "{{ k8s_repo }}/release/v{{ kube_version }}/bin/linux/{{ image_arch }}/kubelet"
+
+cni_download_url: "{{ github_repo }}/containernetworking/plugins/releases/download/v{{ cni_version }}/cni-plugins-linux-{{ image_arch }}-v{{ cni_version }}.tgz"
+crictl_download_url: "{{ github_repo }}/kubernetes-sigs/cri-tools/releases/download/v{{ crictl_version }}/crictl-v{{ crictl_version }}-{{ ansible_system | lower }}-{{ image_arch }}.tar.gz"
+etcd_download_url: "{{ github_repo }}/etcd-io/etcd/releases/download/v{{ etcd_version }}/etcd-v{{ etcd_version }}-linux-{{ image_arch }}.tar.gz"
