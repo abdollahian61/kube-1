@@ -1,15 +1,47 @@
-# STARTING TEMPLATE ONLY: verify against the exact chosen Cilium Helm chart.
-# Cluster is bootstrapped without kube-proxy; Cilium must reach the real API.
+# Eways Cilium v1.20.4, chart 1.20.4, single-node lab.
+# Derived from observed cluster settings. Confirm full live effective overrides
+# with: helm get values cilium -n kube-system -a
 kubeProxyReplacement: true
 k8sServiceHost: 192.168.1.203
 k8sServicePort: 6443
 ipam:
   mode: kubernetes
+operator:
+  replicas: 1
+  image:
+    repository: repository.eways.co/docker-k8s/cilium/operator
+    tag: v1.20.4
+    useDigest: false
+image:
+  repository: repository.eways.co/docker-k8s/cilium/cilium
+  tag: v1.20.4
+  useDigest: false
+envoy:
+  image:
+    repository: repository.eways.co/docker-k8s/cilium/cilium-envoy
+    tag: v1.39.5-1792733054-8c73b2816bc8239e27f1fd53b271884688137459
+    useDigest: false
 hubble:
   enabled: true
   relay:
     enabled: true
+    image:
+      repository: repository.eways.co/docker-k8s/cilium/hubble-relay
+      tag: v1.20.4
+      useDigest: false
   ui:
     enabled: true
-# TODO: mirror and configure ALL chart images to internal JFrog before deployment.
-# TODO: pin chart version and validate Kubernetes 1.36 compatibility.
+    image:
+      repository: repository.eways.co/docker-k8s/cilium/hubble-ui
+      tag: v0.13.6
+      useDigest: false
+    backend:
+      image:
+        repository: repository.eways.co/docker-k8s/cilium/hubble-ui-backend
+        tag: v0.13.6
+        useDigest: false
+    service:
+      type: NodePort
+      nodePort: 31235
+# IMPORTANT: verify chart 1.20.4 schema and rendered image names before applying.
+# Operator chart appends -generic to repository; the effective image is operator-generic.
