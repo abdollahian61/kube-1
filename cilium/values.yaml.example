@@ -1,0 +1,15 @@
+# STARTING TEMPLATE ONLY: verify against the exact chosen Cilium Helm chart.
+# Cluster is bootstrapped without kube-proxy; Cilium must reach the real API.
+kubeProxyReplacement: true
+k8sServiceHost: 192.168.1.203
+k8sServicePort: 6443
+ipam:
+  mode: kubernetes
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+# TODO: mirror and configure ALL chart images to internal JFrog before deployment.
+# TODO: pin chart version and validate Kubernetes 1.36 compatibility.
