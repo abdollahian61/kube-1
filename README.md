@@ -1,46 +1,51 @@
-# Eways Kubernetes bootstrap (Kubespray)
+# Eways Kubernetes platform
 
-Documented state: **2026-10-28**. This repository records the configuration and commands used for the single-node test cluster `tst-jfrog`. It is **not yet a completed, healthy cluster**.
+Last reconciled with reported cluster output: **2026-10-28**.
 
-## Architecture
+## Cluster inventory
+- Lab node: `tst-jfrog`, `192.168.1.203`, Ubuntu 26.04.1
+- Kubernetes: **v1.36.4**, installed with Kubespray
+- Runtime: **containerd 2.3.5**; Helm is installed
+- Bootstrapped without kube-proxy and without another CNI
+- Pod CIDR: `10.233.64.0/18`; Service CIDR: `10.233.0.0/18`
+- Internal registry: `repository.eways.co/docker-k8s` (JFrog)
+- Single-node lab: **not high availability or production ready**
 
-- Node: `tst-jfrog` (`192.168.1.203`), Ubuntu 26.04.1 LTS
-- Kubernetes: `v1.36.4`
-- Container runtime: containerd `2.3.5`
-- Installer: upstream Kubespray in `/home/abdollahian/kubespray`
-- Custom inventory/config: `/home/abdollahian/eways-kubespray-custom`
-- Image registry: `repository.eways.co/docker-k8s` (JFrog virtual Docker repo; local deployment repository `docker-local`)
-- Network plan: bootstrap without CNI or kube-proxy; install Helm and then Cilium (kube-proxy replacement) plus Hubble.
-- This is a **single-node control-plane, worker and etcd test deployment**, not a highly available production topology.
+## Observed deployment state
 
-## Current observed state
+| Component | Pin / details | Evidence |
+|---|---|---|
+| Kubernetes control plane | v1.36.4 | API/controller/scheduler Running |
+| Cilium | Chart 1.20.4; Cilium v1.20.4; kube-proxy replacement | agent, operator, Envoy Running |
+| Hubble | Relay/UI enabled; UI NodePort `31235` | Relay 1/1 and UI 2/2 Running |
+| CoreDNS | two replicas | both Running |
+| NFS CSI | Chart 4.13.6 | Helm deployed revision 2; controller 5/5, node 3/3 |
+| NFS StorageClass | `eways-nfs`, RWX, Retain | test PVC 5Gi Bound |
+| Traefik | Chart 42.1.3; app v3.7.16 | Chart downloaded and values linted; **installation not yet confirmed** |
 
-```text
-tst-jfrog  NotReady  control-plane  v1.36.4  192.168.1.203  containerd://2.3.5
-kube-apiserver-tst-jfrog            1/1 Running
-kube-controller-manager-tst-jfrog   1/1 Running
-kube-scheduler-tst-jfrog            1/1 Running
-coredns (two replicas)              0/1 Pending
-kube-proxy DaemonSet                absent
-```
+**Validation outstanding:** latest `kubectl get nodes` Ready status, end-to-end Cilium connectivity, NFS read/write from a pod, and Traefik actual Deployment/Service. Do not confuse a Running Pod or Bound PVC with these tests.
 
-CoreDNS scheduling events report untolerated taints. The node is NotReady and Cilium has **not** been installed yet. Do not claim the cluster is healthy until a CNI is installed and verified.
+## Directories
 
-## Files
+- [Kubespray inventory and settings](inventory/eways/)
+- [Cilium chart values and setup](cilium/)
+- [Traefik chart values and setup](traefik/)
+- [NFS server, CSI, StorageClass and test](nfs/)
+- [Current installation status](docs/installation-progress.md)
+- [NFS CSI live evidence](docs/nfs-csi-installation.md)
+- [Reproducible build checklist](docs/reproducibility.md)
 
-- [Kubespray variables](inventory/eways/group_vars/k8s_cluster/k8s-cluster.yml)
-- [JFrog download overrides](inventory/eways/group_vars/all/offline.yml)
-- [Installation runner](scripts/03-run-cluster.sh)
-- [Bootstrap and troubleshooting notes](docs/installation-progress.md)
-- [Image inventory and mirror guidance](docs/images.md)
-
-## Installation
-
-Review the documented prerequisites, adapt inventory and SSH key paths to your environment, then run:
+## Validation
 
 ```bash
-cd /home/abdollahian/eways-kubespray-custom
-./scripts/03-run-cluster.sh 2>&1 | tee /root/eways-kubespray-install.log
+kubectl get nodes -o wide
+kubectl get pods -A -o wide
+kubectl get csidrivers,storageclasses
+kubectl get pvc -A
+helm list -A
+kubectl get svc -n kube-system hubble-ui
 ```
 
-**Security:** Never commit `.env`, JFrog credentials, passwords, tokens, private SSH keys, or kubeconfig/admin.conf. Container images sourced from third-party mirrors must be verified against official digests before production use.
+## Security
+
+Never commit credentials, kubeconfig, SSH keys, JFrog tokens or locally rendered manifests containing sensitive values. This repo stores source configuration and runbooks, **not** private cluster snapshots or vendor chart packages.
