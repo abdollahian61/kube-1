@@ -21,3 +21,15 @@ bash scripts/archive-local-tools.sh
 ```
 
 Upload the resulting tarball and inventory to your private JFrog generic repository after reviewing their contents. The scripts do not automatically push the artifacts.
+
+## Installed components and release capture (2026-10-28)
+
+Cilium/Hubble and NFS CSI have now been observed running. Traefik chart 42.1.3 lint passes but its install is not confirmed. Use the checked-in guides in `cilium/`, `nfs/`, and `traefik/`. Before treating examples as the exact deployed configuration, export reviewed live values:
+
+```bash
+helm get values cilium -n kube-system -a > /tmp/cilium-live-values.yaml
+helm get values csi-driver-nfs -n kube-system -a > /tmp/nfs-live-values.yaml
+helm list -A
+```
+
+Sanitize sensitive values and diff against version-controlled YAML prior to committing. Keep original chart `.tgz`, digest attestations and the inventory of mirrored images in controlled JFrog artifact repositories. Do not commit kubeconfig, credentials or copied runtime secret manifests.
