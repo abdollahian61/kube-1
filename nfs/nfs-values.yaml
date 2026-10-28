@@ -1,0 +1,23 @@
+# Image repository must match your actual JFrog Docker repository routing.
+image:
+  nfs:
+    repository: repository.eways.co/docker-local/sig-storage/nfsplugin
+    tag: v4.13.6
+  csiProvisioner:
+    repository: repository.eways.co/docker-local/sig-storage/csi-provisioner
+    tag: v6.3.0
+  csiResizer:
+    repository: repository.eways.co/docker-local/sig-storage/csi-resizer
+    tag: v2.2.1
+  csiSnapshotter:
+    repository: repository.eways.co/docker-local/sig-storage/csi-snapshotter
+    tag: v8.6.0
+  livenessProbe:
+    repository: repository.eways.co/docker-local/sig-storage/livenessprobe
+    tag: v2.19.0
+  nodeDriverRegistrar:
+    repository: repository.eways.co/docker-local/sig-storage/csi-node-driver-registrar
+    tag: v2.17.0
+controller:
+  replicas: 1
+  runOnControlPlane: true
